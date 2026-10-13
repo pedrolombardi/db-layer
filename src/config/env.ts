@@ -6,7 +6,7 @@ import { z } from 'zod';
  * do que descobrir uma variavel faltando no meio de uma migracao.
  */
 const schema = z.object({
-  PORT: z.coerce.number().int().positive().default(3001),
+  PORT: z.coerce.number().int().positive().default(3002),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
 
   SRC_HOST: z.string().min(1),

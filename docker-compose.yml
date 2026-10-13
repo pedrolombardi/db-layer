@@ -52,14 +52,22 @@ services:
   db-layer:
     build: .
     container_name: dbl-api
-    env_file: .env
+    # Tudo explicito aqui: o compose sobe sem precisar de .env.
+    # (Credenciais de desenvolvimento, as mesmas dos seeds.)
     environment:
+      PORT: 3002
       SRC_HOST: mysql
       SRC_PORT: 3306
+      SRC_USER: readonly
+      SRC_PASSWORD: readonly
+      SRC_DATABASE: vendas
       TGT_HOST: oracle-free
       TGT_PORT: 1521
+      TGT_SERVICE: FREEPDB1
+      TGT_USER: vendas
+      TGT_PASSWORD: vendas
     ports:
-      - "3001:3001"
+      - "3002:3002"
     depends_on:
       mysql:
         condition: service_healthy

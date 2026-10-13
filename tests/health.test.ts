@@ -18,6 +18,7 @@ function fakeAdapter(role: 'source' | 'target', ok: boolean): DbAdapter {
   return {
     engine: info.engine,
     role,
+    schema: 'vendas',
     connect: async () => {},
     close: async () => {},
     info: async () => {

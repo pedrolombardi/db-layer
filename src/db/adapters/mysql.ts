@@ -30,6 +30,10 @@ export class MySqlAdapter implements DbAdapter {
     this.role = cfg.role;
   }
 
+  get schema(): string {
+    return this.cfg.database;
+  }
+
   async connect(): Promise<void> {
     try {
       this.pool = mysql.createPool({

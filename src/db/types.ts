@@ -45,6 +45,8 @@ export interface QueryResult {
 export interface DbAdapter {
   readonly engine: Engine;
   readonly role: Role;
+  /** schema/database apontado (MySQL: database; Oracle: usuario dono, MAIUSCULO) */
+  readonly schema: string;
 
   /** abre o pool de conexoes */
   connect(): Promise<void>;
@@ -71,7 +73,8 @@ export class DbLayerError extends Error {
       | 'CONNECTION_FAILED'
       | 'READ_ONLY_VIOLATION'
       | 'QUERY_FAILED'
-      | 'NOT_CONNECTED',
+      | 'NOT_CONNECTED'
+      | 'NOT_SUPPORTED',
     message: string,
     public readonly cause?: unknown,
   ) {

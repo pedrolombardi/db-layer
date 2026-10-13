@@ -40,6 +40,10 @@ export class OracleAdapter implements DbAdapter {
     this.role = cfg.role;
   }
 
+  get schema(): string {
+    return this.cfg.user.toUpperCase();
+  }
+
   private get connectString(): string {
     return `${this.cfg.host}:${this.cfg.port}/${this.cfg.serviceName}`;
   }
@@ -91,16 +95,29 @@ export class OracleAdapter implements DbAdapter {
 
   async info(): Promise<ConnectionInfo> {
     const started = Date.now();
-    const version = await this.query(
-      `SELECT banner_full AS v FROM v$version WHERE ROWNUM = 1`,
-    );
+    if (!this.pool) {
+      throw new DbLayerError('NOT_CONNECTED', 'Oracle: pool nao inicializado');
+    }
+    // A versao vem do handshake (oracleServerVersionString): nao depende de
+    // privilegio em v$version, que o usuario da aplicacao pode nao ter.
+    let version: string;
+    try {
+      const conn = await this.pool.getConnection();
+      try {
+        version = conn.oracleServerVersionString;
+      } finally {
+        await conn.close();
+      }
+    } catch (err) {
+      throw new DbLayerError('CONNECTION_FAILED', `Oracle: ${(err as Error).message}`, err);
+    }
     const charset = await this.query(
       `SELECT value AS v FROM nls_database_parameters WHERE parameter = 'NLS_CHARACTERSET'`,
     );
     return {
       engine: this.engine,
       role: this.role,
-      version: String(version.rows[0]?.V ?? version.rows[0]?.v ?? 'desconhecida'),
+      version,
       schema: this.cfg.user.toUpperCase(),
       charset: String(charset.rows[0]?.V ?? charset.rows[0]?.v ?? 'desconhecido'),
       readOnly: this.role === 'source',

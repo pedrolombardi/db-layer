@@ -10,6 +10,9 @@
 -- Bancos legados estao cheios delas, e reproduzir isso e o objetivo aqui.
 SET SESSION sql_mode = '';
 
+-- O cliente do entrypoint roda sem locale (latin1): sem isto "João" vira "JoÃ£o".
+SET NAMES utf8mb4;
+
 CREATE DATABASE IF NOT EXISTS vendas
   CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE vendas;

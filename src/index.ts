@@ -18,7 +18,14 @@ async function main(): Promise<void> {
   }
 
   const app = createApp(registry);
-  const server = app.listen(env.PORT, () => {
+  // Express 5: erros do listen (ex.: EADDRINUSE) chegam neste callback.
+  // Ignorar o argumento deixaria o processo de pe sem escutar - falha silenciosa.
+  const server = app.listen(env.PORT, (err?: Error) => {
+    if (err) {
+      console.error(`[db-layer] nao consegui escutar na porta ${env.PORT}:`, err.message);
+      void registry.closeAll().finally(() => process.exit(1));
+      return;
+    }
     console.log(`[db-layer] ouvindo na porta ${env.PORT}`);
   });
 
