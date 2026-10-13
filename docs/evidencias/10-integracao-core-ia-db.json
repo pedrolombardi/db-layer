@@ -1,0 +1,376 @@
+{
+  "observacao": "Backend Core + AI Layer + DB Layer REAIS (branches main de placeholder-backend-core e placeholder-ai-layer, placeholder-db-layer). Data Layer ainda mock. Credenciais da origem removidas deste arquivo.",
+  "migration": {
+    "id": "5bb2a282-e0c6-4b33-b1cf-fb5f958cc56f",
+    "name": "vendas (integracao completa)",
+    "target": {
+      "type": "oracle"
+    },
+    "status": "WAITING_APPROVAL",
+    "proposal": {
+      "tables": [
+        {
+          "name": "clientes",
+          "columns": [
+            {
+              "name": "id",
+              "type": "INT"
+            },
+            {
+              "name": "nome",
+              "type": "VARCHAR(120)"
+            },
+            {
+              "name": "email",
+              "type": "VARCHAR(300)"
+            },
+            {
+              "name": "cpf",
+              "type": "CHAR(11)"
+            },
+            {
+              "name": "ativo",
+              "type": "TINYINT(1)"
+            },
+            {
+              "name": "saldo",
+              "type": "DECIMAL(18,4)"
+            },
+            {
+              "name": "criado_em",
+              "type": "DATETIME"
+            },
+            {
+              "name": "atualizado_em",
+              "type": "DATETIME"
+            }
+          ],
+          "foreignKeys": []
+        },
+        {
+          "name": "eventos",
+          "columns": [
+            {
+              "name": "id",
+              "type": "BIGINT"
+            },
+            {
+              "name": "pedido_id",
+              "type": "INT"
+            },
+            {
+              "name": "tipo",
+              "type": "VARCHAR(60)"
+            },
+            {
+              "name": "dados",
+              "type": "JSON"
+            },
+            {
+              "name": "valor",
+              "type": "DOUBLE"
+            },
+            {
+              "name": "ocorrido_em",
+              "type": "TIMESTAMP"
+            }
+          ],
+          "foreignKeys": [
+            {
+              "column": "pedido_id",
+              "references": "pedidos.id"
+            }
+          ]
+        },
+        {
+          "name": "pedidos",
+          "columns": [
+            {
+              "name": "id",
+              "type": "INT"
+            },
+            {
+              "name": "cliente_id",
+              "type": "INT"
+            },
+            {
+              "name": "status",
+              "type": "ENUM('novo','pago','enviado','cancelado')"
+            },
+            {
+              "name": "total",
+              "type": "DECIMAL(18,4)"
+            },
+            {
+              "name": "observacao",
+              "type": "TEXT"
+            },
+            {
+              "name": "criado_em",
+              "type": "DATETIME"
+            }
+          ],
+          "foreignKeys": [
+            {
+              "column": "cliente_id",
+              "references": "clientes.id"
+            }
+          ]
+        }
+      ],
+      "summary": "3 tabelas e 20 conflitos: 15 resolvidos por regra, 1 propostos pela IA, 4 aguardando decisão humana.",
+      "conflicts": [
+        {
+          "id": "clientes.id",
+          "kind": "mechanical",
+          "table": "clientes",
+          "column": "id",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear INT -> NUMBER(10) (aviso: ressincronizar a IDENTITY depois da carga (START WITH LIMIT VALUE))",
+          "sourceType": "INT",
+          "targetType": "NUMBER(10)",
+          "description": "equivalência direta INT → NUMBER(10)"
+        },
+        {
+          "id": "clientes.nome",
+          "kind": "mechanical",
+          "table": "clientes",
+          "column": "nome",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear VARCHAR(120) -> VARCHAR2(120 CHAR)",
+          "sourceType": "VARCHAR(120)",
+          "targetType": "VARCHAR2(120 CHAR)",
+          "description": "equivalência direta VARCHAR(120) → VARCHAR2(120 CHAR)"
+        },
+        {
+          "id": "clientes.email",
+          "kind": "judgement",
+          "table": "clientes",
+          "column": "email",
+          "status": "RESOLVED",
+          "evidence": [
+            "profileColumn: totalRows=10, nullCount=0, distinctCount=10, lengthThreshold=200, thresholdSource=\"target.declared\", thresholdUnit=\"BYTE\", valuesAboveThreshold=2, maxObservedLength=226, maxObservedBytes=226",
+            "checkCharset: charset=\"utf8mb4\", collation=\"utf8mb4_0900_ai_ci\", maxBytesPerCharacter=4"
+          ],
+          "decidedBy": "ai",
+          "resolution": "Usar VARCHAR2(300 CHAR)",
+          "sourceType": "VARCHAR(300)",
+          "targetType": "VARCHAR2(200)",
+          "description": "2 valores excedem o tamanho declarado no destino (máx. 226 > 200 bytes)",
+          "justification": "Foram identificados 2 registros acima de 200 caracteres. Recomenda-se avaliar VARCHAR2(300 CHAR), sujeito à validação de compatibilidade no Oracle e aprovação humana."
+        },
+        {
+          "id": "clientes.cpf",
+          "kind": "mechanical",
+          "table": "clientes",
+          "column": "cpf",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear CHAR(11) -> CHAR(11) (aviso: destino menor que o pior caso da origem (CHAR(11)), mas os dados atuais cabem (máx. 11 bytes))",
+          "sourceType": "CHAR(11)",
+          "targetType": "CHAR(11)",
+          "description": "equivalência direta CHAR(11) → CHAR(11)"
+        },
+        {
+          "id": "clientes.ativo",
+          "kind": "judgement",
+          "table": "clientes",
+          "column": "ativo",
+          "status": "DEFERRED",
+          "decidedBy": null,
+          "sourceType": "TINYINT(1)",
+          "targetType": "NUMBER(1)",
+          "deferReason": "A coluna possui valores além de 0 e 1. Sem conhecer as regras de negócio, não é seguro interpretá-la como booleana. É necessária validação humana.",
+          "description": "TINYINT(1) parece booleano, mas o significado é regra de negócio; distintos: 0 (1×), 1 (7×), 2 (2×)"
+        },
+        {
+          "id": "clientes.saldo",
+          "kind": "mechanical",
+          "table": "clientes",
+          "column": "saldo",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear DECIMAL(18,4) -> NUMBER(18,4)",
+          "sourceType": "DECIMAL(18,4)",
+          "targetType": "NUMBER(18,4)",
+          "description": "equivalência direta DECIMAL(18,4) → NUMBER(18,4)"
+        },
+        {
+          "id": "clientes.criado_em",
+          "kind": "mechanical",
+          "table": "clientes",
+          "column": "criado_em",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear DATETIME -> TIMESTAMP(6)",
+          "sourceType": "DATETIME",
+          "targetType": "TIMESTAMP(6)",
+          "description": "equivalência direta DATETIME → TIMESTAMP(6)"
+        },
+        {
+          "id": "clientes.atualizado_em",
+          "kind": "judgement",
+          "table": "clientes",
+          "column": "atualizado_em",
+          "status": "DEFERRED",
+          "decidedBy": null,
+          "sourceType": "DATETIME",
+          "targetType": "TIMESTAMP(6)",
+          "deferReason": "Não existem evidências disponíveis para este conflito.",
+          "description": "ON UPDATE CURRENT_TIMESTAMP não existe no Oracle: o comportamento se perde em silêncio sem trigger"
+        },
+        {
+          "id": "eventos.id",
+          "kind": "mechanical",
+          "table": "eventos",
+          "column": "id",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear BIGINT -> NUMBER(19) (aviso: ressincronizar a IDENTITY depois da carga (START WITH LIMIT VALUE))",
+          "sourceType": "BIGINT",
+          "targetType": "NUMBER(19)",
+          "description": "equivalência direta BIGINT → NUMBER(19)"
+        },
+        {
+          "id": "eventos.pedido_id",
+          "kind": "mechanical",
+          "table": "eventos",
+          "column": "pedido_id",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear INT -> NUMBER(10)",
+          "sourceType": "INT",
+          "targetType": "NUMBER(10)",
+          "description": "equivalência direta INT → NUMBER(10)"
+        },
+        {
+          "id": "eventos.tipo",
+          "kind": "mechanical",
+          "table": "eventos",
+          "column": "tipo",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear VARCHAR(60) -> VARCHAR2(60 CHAR)",
+          "sourceType": "VARCHAR(60)",
+          "targetType": "VARCHAR2(60 CHAR)",
+          "description": "equivalência direta VARCHAR(60) → VARCHAR2(60 CHAR)"
+        },
+        {
+          "id": "eventos.dados",
+          "kind": "judgement",
+          "table": "eventos",
+          "column": "dados",
+          "status": "DEFERRED",
+          "decidedBy": null,
+          "sourceType": "JSON",
+          "targetType": "CLOB",
+          "deferReason": "Não existem evidências disponíveis para este conflito.",
+          "description": "JSON → CLOB perde a validação de JSON; o 23ai tem tipo JSON nativo — decisão de design"
+        },
+        {
+          "id": "eventos.valor",
+          "kind": "mechanical",
+          "table": "eventos",
+          "column": "valor",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear DOUBLE -> BINARY_DOUBLE",
+          "sourceType": "DOUBLE",
+          "targetType": "BINARY_DOUBLE",
+          "description": "equivalência direta DOUBLE → BINARY_DOUBLE"
+        },
+        {
+          "id": "eventos.ocorrido_em",
+          "kind": "mechanical",
+          "table": "eventos",
+          "column": "ocorrido_em",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear TIMESTAMP -> TIMESTAMP(6) (aviso: TIMESTAMP do MySQL é guardado em UTC e convertido pelo time_zone da sessão: extrair com time_zone fixo (ex. '+00:00'))",
+          "sourceType": "TIMESTAMP",
+          "targetType": "TIMESTAMP(6)",
+          "description": "equivalência direta TIMESTAMP → TIMESTAMP(6)"
+        },
+        {
+          "id": "pedidos.id",
+          "kind": "mechanical",
+          "table": "pedidos",
+          "column": "id",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear INT -> NUMBER(10) (aviso: ressincronizar a IDENTITY depois da carga (START WITH LIMIT VALUE))",
+          "sourceType": "INT",
+          "targetType": "NUMBER(10)",
+          "description": "equivalência direta INT → NUMBER(10)"
+        },
+        {
+          "id": "pedidos.cliente_id",
+          "kind": "mechanical",
+          "table": "pedidos",
+          "column": "cliente_id",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear INT -> NUMBER(10)",
+          "sourceType": "INT",
+          "targetType": "NUMBER(10)",
+          "description": "equivalência direta INT → NUMBER(10)"
+        },
+        {
+          "id": "pedidos.status",
+          "kind": "mechanical",
+          "table": "pedidos",
+          "column": "status",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear ENUM('novo','pago','enviado','cancelado') -> VARCHAR2(20 CHAR)",
+          "sourceType": "ENUM('novo','pago','enviado','cancelado')",
+          "targetType": "VARCHAR2(20 CHAR)",
+          "description": "equivalência direta ENUM('novo','pago','enviado','cancelado') → VARCHAR2(20 CHAR)"
+        },
+        {
+          "id": "pedidos.total",
+          "kind": "mechanical",
+          "table": "pedidos",
+          "column": "total",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear DECIMAL(18,4) -> NUMBER(18,4)",
+          "sourceType": "DECIMAL(18,4)",
+          "targetType": "NUMBER(18,4)",
+          "description": "equivalência direta DECIMAL(18,4) → NUMBER(18,4)"
+        },
+        {
+          "id": "pedidos.observacao",
+          "kind": "mechanical",
+          "table": "pedidos",
+          "column": "observacao",
+          "status": "RESOLVED",
+          "decidedBy": "rule",
+          "resolution": "Mapear TEXT -> CLOB",
+          "sourceType": "TEXT",
+          "targetType": "CLOB",
+          "description": "equivalência direta TEXT → CLOB"
+        },
+        {
+          "id": "pedidos.criado_em",
+          "kind": "judgement",
+          "table": "pedidos",
+          "column": "criado_em",
+          "status": "DEFERRED",
+          "decidedBy": null,
+          "sourceType": "DATETIME",
+          "targetType": "TIMESTAMP(6)",
+          "deferReason": "Não existem evidências disponíveis para este conflito.",
+          "description": "2 de 6 linhas com data zero ou parcial (sem equivalente no Oracle)"
+        }
+      ],
+      "pendingDecisions": 4
+    },
+    "result": null,
+    "error": null,
+    "createdAt": "2026-10-13T22:35:08.948Z",
+    "updatedAt": "2026-10-13T22:35:09.410Z"
+  }
+}

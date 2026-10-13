@@ -5,7 +5,7 @@ Mapa de cada parte da atividade para os arquivos desta pasta.
 | Parte da atividade | Onde está |
 |---|---|
 | 1. Protótipo (parcial funcional, back-end) | O próprio serviço. O fluxo principal (conectar → ler catálogos → classificar → evidência) está no [roteiro do README](../README.md#roteiro-da-demo) |
-| 2. Prova de conceito + integração com banco | [evidencias/RESUMO.md](evidencias/RESUMO.md): respostas reais de MySQL 8 e Oracle 23ai; [integração com o Backend Core](evidencias/09-integracao-backend-core.json). Código em [`../src`](../src) |
+| 2. Prova de conceito + integração com banco | [evidencias/RESUMO.md](evidencias/RESUMO.md): respostas reais de MySQL 8 e Oracle 23ai; integração com o [Backend Core](evidencias/09-integracao-backend-core.json) e com [Core + AI Layer](evidencias/10-integracao-core-ia-db.json). Código em [`../src`](../src) |
 | 3. Validação técnica | [VALIDACAO_TECNICA.md](VALIDACAO_TECNICA.md) |
 | 4. Arquitetura atualizada | [ARQUITETURA.md](ARQUITETURA.md) (diagramas em Mermaid; [arquitetura.png](arquitetura.png) e [arquitetura-interna.png](arquitetura-interna.png) para quem não renderiza Mermaid) |
 | 5. Teste de usabilidade | Do grupo, sobre o protótipo navegável (Front-end). O DB Layer não tem interface: ver [USABILIDADE.md](USABILIDADE.md) |

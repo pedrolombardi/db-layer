@@ -11,6 +11,7 @@
   com dado real, protegidas contra injeção e com mascaramento LGPD
 - [x] Integração com a AI Layer comprovada ponta a ponta (`npm run demo`)
 - [x] Integração com o Backend Core comprovada: o Core real consome o DB Layer real (contrato coberto por teste)
+- [x] Análise real de ponta a ponta: Core + AI Layer + DB Layer reais (evidência 10)
 - [x] 30 testes, CI, `docker compose` sem configuração manual, evidências reproduzíveis
 
 ## Fase 7 — prioridades

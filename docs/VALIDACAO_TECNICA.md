@@ -33,7 +33,14 @@ O Backend Core do grupo (código do Giovanni, **sem alteração**) foi apontado 
 real e montou a proposta: *"3 tabelas e 20 conflitos: 15 resolvidos por regra, …"*
 ([evidência 9](evidencias/09-integracao-backend-core.json)). Os formatos que o Core espera eram
 suposição do lado dele. O DB Layer passou a aceitá-los **sem remover** os campos que já usava, e
-`tests/core-contract.test.ts` trava esse contrato. A AI Layer e o Data Layer ainda eram mocks.
+`tests/core-contract.test.ts` trava esse contrato.
+
+Depois, com a **AI Layer real** também ligada ao Core, a análise ficou real de ponta a ponta
+([evidência 10](evidencias/10-integracao-core-ia-db.json)): `clientes.email` → PROPOSE
+`VARCHAR2(300 CHAR)` com evidência medida pelo DB Layer (2 de 10 acima de 200 bytes), e
+`clientes.ativo` → DEFER (valores 0, 1 e 2). Os cenários de rejeitar (REJECTED), executar sem
+aprovação (409) e aprovar sem decidir o DEFER (422) também foram validados. A execução para no
+`/validate/plan` (501, Fase 7), e o Data Layer segue mock.
 
 ## 3. Riscos técnicos
 
@@ -46,7 +53,7 @@ suposição do lado dele. O DB Layer passou a aceitá-los **sem remover** os cam
 | Credenciais de desenvolvimento no `docker-compose.yml` | Médio | Valem só para o ambiente local; em produção, gerenciador de segredos | ⏳ Fase 7 |
 | Contrato com a AI Layer baseado em texto de tipo (`"VARCHAR2(200)"`) | Médio | O DB Layer renderiza o formato exato **e** envia os campos estruturados | ⚠️ a AI Layer precisa migrar |
 | O Core envia as credenciais da origem por migração, mas o DB Layer usa as conexões configuradas nele | Alto: analisaria outro banco em silêncio | Engine e database diferentes do configurado → **400** `CONNECTION_MISMATCH` | ✅ mitigado; credencial por migração na Fase 7 |
-| Mock da IA no Core contradiz o dado real: propõe `ativo` como booleano (0/1), mas existe o valor `2` | Alto, se o mock for apresentado como resultado | A AI Layer real (Erick) dá DEFER com a evidência do DB Layer | ⚠️ integrar a AI Layer real no Core |
+| Mock da IA no Core contradiz o dado real: propõe `ativo` como booleano (0/1), mas existe o valor `2` | Alto, se o mock for apresentado como resultado | A AI Layer real (Erick) dá DEFER com a evidência do DB Layer | ✅ resolvido: AI Layer real integrada ao Core |
 | Origem e destino no mesmo engine (ex.: Oracle → Oracle) | Médio | Parâmetro opcional `side` nas tools | ✅ suportado |
 | Ambiente pesado: Oracle Free usa ~2 GB de RAM | Baixo | Documentado; a imagem tem versão arm64 (Mac M) | ✅ |
 
