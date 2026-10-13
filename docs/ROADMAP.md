@@ -12,6 +12,8 @@
 - [x] Integração com a AI Layer comprovada ponta a ponta (`npm run demo`)
 - [x] Integração com o Backend Core comprovada: o Core real consome o DB Layer real (contrato coberto por teste)
 - [x] Análise real de ponta a ponta: Core + AI Layer + DB Layer reais (evidência 10)
+- [x] Execução real: extração → Data Layer → validação no sandbox Oracle (5 verificações) → script de migração
+- [x] Plataforma completa (`placeholder-platform`): um `docker compose up` com todos os serviços e o front, mais o e2e no CI
 - [x] 30 testes, CI, `docker compose` sem configuração manual, evidências reproduzíveis
 
 ## Fase 7 — prioridades
@@ -21,8 +23,9 @@
 | P1 | **Autenticação entre serviços** (token por serviço) | Nenhum endpoint deveria ficar aberto fora da rede local |
 | P1 | **Amostragem e limite de tempo nos probes** | Ler a tabela inteira inviabiliza tabelas grandes de produção |
 | P1 | **Credenciais por migração** (Connection Manager): hoje o DB Layer usa as conexões configuradas e recusa outras com 400 | O Core já envia host/database/usuário da origem |
-| P1 | **Extração de amostra para o Data Layer** (`POST /extract/sample` → `{dataset: {tables: [{name, columns: [{name, type, nullable, pk, fk}], rows}]}}`, o formato do `/v1/anonymize` do Lucas) | O Data Layer recebe linhas mas não lê a origem, e hoje ninguém as entrega; o DB Layer é o único com acesso de leitura. Exige combinar o tipo de `DECIMAL` (string, para não perder precisão) e o limite de linhas |
-| P1 | **`/validate/plan`**: validar deterministicamente o plano de migração | É o "quem valida não é quem propõe" aplicado ao plano. Depende de acertar o formato do plano com o Core |
+| P1 | **Execução assistida do script** no destino, com carga dos dados e verificação pós-carga | Hoje o DB Layer gera o script e o DBA executa |
+| P2 | **Amostragem estratificada** na extração (hoje: primeiras 1.000 linhas por PK) | A amostra precisa representar a tabela inteira |
+| — | ~~Extração de amostra para o Data Layer~~ (feito) (`POST /extract/sample` → `{dataset: {tables: [{name, columns: [{name, type, nullable, pk, fk}], rows}]}}`, o formato do `/v1/anonymize` do Lucas) | O Data Layer recebe linhas mas não lê a origem, e hoje ninguém as entrega; o DB Layer é o único com acesso de leitura. Exige combinar o tipo de `DECIMAL` (string, para não perder precisão) e o limite de linhas |
 | P2 | **Cache do catálogo** com expiração | Cada chamada de tool relê os dois catálogos hoje |
 | P2 | **Regras novas**: string vazia vira NULL no Oracle (quebra `NOT NULL`); defaults; índices únicos com prefixo | Mais riscos que hoje passam em silêncio ficam visíveis |
 | P2 | **Imagem no GHCR** (workflow pronto) | O grupo roda sem precisar buildar |

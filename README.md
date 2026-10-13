@@ -2,7 +2,7 @@
 
 Microserviço responsável pela interação com os bancos de dados da plataforma de migração:
 conexão com bancos heterogêneos, introspecção de schema, detecção de conflitos, execução das
-consultas que servem de evidência para a AI Layer e, na Fase 7, validação determinística dos planos de
+consultas que servem de evidência para a AI Layer validação determinística dos planos de
 migração.
 
 **Regras estruturais do serviço:**
@@ -54,7 +54,9 @@ npm test && npm run typecheck && npm run lint && npm run build
 | POST | `/connections/test` | `{"role":"source"\|"target"}` → metadados de um lado. Formato do Backend Core `{source:{type,database,...}, target:{type}}` → `{source:{ok,readOnly,...}, target:{ok,...}}`; engine/database diferente do configurado → **400** `CONNECTION_MISMATCH` |
 | GET | `/schema/introspect?side=source\|target` | modelo normalizado; um lado → `{side, engine, schema, tables}`, sem parâmetro → `{source, target}`. `?connection=` é sinônimo (usado pelo Core) |
 | POST | `/schema/diff` | todas as colunas pareadas, `mecanico \| julgamento`, com regra e motivo |
-| POST | `/validate/plan` | **501** `NOT_IMPLEMENTED`: previsto no documento da Fase 6, entregue na Fase 7 |
+| POST | `/extract/sample` | `{tables?, limit?}` → amostra da origem no formato do `/v1/anonymize` do Data Layer (datas, ENUM e flags em `options.preserve`) |
+| POST | `/validate/plan` | `{plan, dataset}` → fatos da origem contra os tipos planejados + carga do dataset anonimizado no schema **SANDBOX** do Oracle: `row_count`, `silent_truncation`, `foreign_keys`, `type_precision_scale`, `null_count` |
+| POST | `/plan/apply` | `{plan}` → **script de migração** para o destino (`applied: false`, `mode: "script"`): o DB Layer não escreve no destino |
 | POST | `/tools/profile-column` | `{database, table, column, threshold?}` → tamanhos, nulos, quantos estouram |
 | POST | `/tools/sample-values` | `{database, table, column, limit?}` → valores distintos e contagens. Coluna com muitos valores diferentes (CPF, e-mail) volta `masked: true`, sem os valores (LGPD) |
 | POST | `/tools/check-charset` | `{database, table, column}` → charset, collation e bytes por caractere |
@@ -131,7 +133,7 @@ src/
   routes/                health, connections, schema, tools
 seeds/                   origem (MySQL) com os conflitos; destino (Oracle) propositalmente imperfeito
 scripts/                 demo.ts (ponta a ponta com a AI Layer), evidencias.ts
-tests/                   35 testes (Vitest + Supertest; contrato do Core em core-contract), fixture = schema real do seed
+tests/                   41 testes (Vitest + Supertest; contrato do Core em core-contract), fixture = schema real do seed
 docs/                    entrega: evidências, validação técnica, arquitetura, usabilidade, roadmap
 ```
 

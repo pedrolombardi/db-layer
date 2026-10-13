@@ -77,7 +77,7 @@ flowchart TB
 ## Manutenção
 
 - **TypeScript estrito**, com configuração validada no boot (falha alto se faltar variável).
-- **35 testes** + CI (lint, typecheck, testes e build) a cada push. O workflow que publica a
+- **41 testes** + CI (lint, typecheck, testes e build) a cada push. O workflow que publica a
   imagem no GHCR está escrito, mas ainda não rodou (falta o repositório no GitHub).
 - **Reprodutível**: `docker compose up` sobe origem, destino e serviço sem configuração manual;
   `npm run evidencias` regera as evidências.

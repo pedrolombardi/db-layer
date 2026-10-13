@@ -40,7 +40,24 @@ Depois, com a **AI Layer real** também ligada ao Core, a análise ficou real de
 `VARCHAR2(300 CHAR)` com evidência medida pelo DB Layer (2 de 10 acima de 200 bytes), e
 `clientes.ativo` → DEFER (valores 0, 1 e 2). Os cenários de rejeitar (REJECTED), executar sem
 aprovação (409) e aprovar sem decidir o DEFER (422) também foram validados. A execução para no
-`/validate/plan` (501, Fase 7), e o Data Layer segue mock.
+`/validate/plan`, que na época era Fase 7.
+
+### Execução real (plataforma completa)
+
+Com a validação implementada, a plataforma inteira roda real (repositório `placeholder-platform`):
+o DB Layer extrai a amostra da origem, o **Data Layer** anonimiza, e o DB Layer carrega o
+dataset nos tipos planejados num schema **SANDBOX** do Oracle e roda as 5 verificações. O plano
+aprovado vira um script de migração. O teste ponta a ponta (`npm run e2e`) passa com todos os
+serviços reais. Um plano ruim é reprovado pelos motivos certos: manter `VARCHAR2(200)` falha em
+`silent_truncation` (2 valores, máx. 226), e a data zero sem decisão falha em
+`type_precision_scale` (`ORA-01843` real no sandbox).
+
+Três ajustes vieram do teste com o Data Layer real:
+- datas, ENUM e flags vão preservadas, para a data zero chegar ao sandbox;
+- decimais perturbados pela anonimização voltam à escala da origem antes da carga;
+- o truncamento é medido na **origem**, porque a pseudonimização muda o tamanho dos e-mails.
+
+A primeira conexão e o primeiro DDL no Oracle levavam ~13 s; o sandbox agora é aquecido no boot.
 
 ## 3. Riscos técnicos
 
@@ -83,7 +100,7 @@ aprovação (409) e aprovar sem decidir o DEFER (422) também foram validados. A
 
 ## 6. Qualidade
 
-35 testes automatizados ([saída](evidencias/testes.txt)) cobrindo:
+41 testes automatizados ([saída](evidencias/testes.txt)) cobrindo:
 - o classificador, com o schema real do seed como fixture;
 - a normalização dos catálogos;
 - a guarda de somente-leitura;
