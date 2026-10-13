@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/tools/profile-column",
+    "body": {
+      "database": "mysql",
+      "table": "clientes",
+      "column": "email"
+    }
+  },
+  "status": 200,
+  "response": {
+    "status": "OK",
+    "simulated": false,
+    "database": "mysql",
+    "side": "source",
+    "table": "clientes",
+    "column": "email",
+    "totalRows": 10,
+    "nullCount": 0,
+    "distinctCount": 10,
+    "lengthThreshold": 200,
+    "thresholdSource": "target.declared",
+    "thresholdUnit": "BYTE",
+    "valuesAboveThreshold": 2,
+    "maxObservedLength": 226,
+    "maxObservedBytes": 226
+  }
+}

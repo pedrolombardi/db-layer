@@ -9,6 +9,7 @@ import { toolRoutes } from './routes/tools';
 
 export function createApp(registry: Registry, deps: Deps = defaultDeps): Express {
   const app = express();
+  app.disable('x-powered-by');
   app.use(express.json({ limit: '1mb' }));
 
   app.use(healthRoutes(registry));

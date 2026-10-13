@@ -1,0 +1,43 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/tools/sample-values",
+    "body": {
+      "database": "mysql",
+      "table": "clientes",
+      "column": "ativo"
+    }
+  },
+  "status": 200,
+  "response": {
+    "status": "OK",
+    "simulated": false,
+    "database": "mysql",
+    "side": "source",
+    "table": "clientes",
+    "column": "ativo",
+    "masked": false,
+    "distinctCount": 3,
+    "nonNullCount": 10,
+    "values": [
+      0,
+      1,
+      2
+    ],
+    "counts": [
+      {
+        "value": 0,
+        "count": 1
+      },
+      {
+        "value": 1,
+        "count": 7
+      },
+      {
+        "value": 2,
+        "count": 2
+      }
+    ],
+    "truncated": false
+  }
+}

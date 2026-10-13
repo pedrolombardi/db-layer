@@ -55,11 +55,16 @@ npm test && npm run typecheck && npm run lint && npm run build
 | GET | `/schema/introspect?side=source\|target` | modelo normalizado (default: os dois) |
 | POST | `/schema/diff` | todas as colunas pareadas, `mecanico \| julgamento`, com regra e motivo |
 | POST | `/tools/profile-column` | `{database, table, column, threshold?}` → tamanhos, nulos, quantos estouram |
-| POST | `/tools/sample-values` | `{database, table, column, limit?}` → valores distintos e contagens |
+| POST | `/tools/sample-values` | `{database, table, column, limit?}` → valores distintos e contagens. Coluna com muitos valores diferentes (CPF, e-mail) volta `masked: true`, sem os valores (LGPD) |
 | POST | `/tools/check-charset` | `{database, table, column}` → charset, collation e bytes por caractere |
 
 Tools: nome inválido (ex. `"clientes; DROP TABLE clientes"`) → **400** `INVALID_IDENTIFIER`, sem
 nenhuma consulta. Nome válido, mas fora do catálogo → **200** `status: "NO_DATA"`.
+
+## Evidências da PoC
+
+`npm run evidencias` (com o compose de pé) chama cada endpoint nos bancos reais e salva as
+respostas em `docs/evidencias/`, mais um `RESUMO.md`. A documentação da entrega está em [`docs/`](docs/).
 
 ## Roteiro da demo
 
@@ -115,16 +120,14 @@ boolean, e o que ele significa não está no banco — só quem conhece a regra 
 ```
 src/
   config/env.ts          configuração validada no boot (Zod)
-  db/
-    types.ts             interface comum dos adaptadores
-    readonly.ts          guarda de somente-leitura
-    registry.ts          instancia origem e destino
-    adapters/            mysql.ts, oracle.ts
-  routes/                health.ts, connections.ts
-seeds/
-  mysql/                 schema de origem com os conflitos
-  oracle/                schema de destino (propositalmente imperfeito)
-tests/
+  db/                    DbAdapter, guarda de somente-leitura, adaptadores mysql.ts e oracle.ts
+  schema/                introspecção → modelo normalizado; classify (função pura); diff; probes
+  tools/                 profile-column, sample-values, check-charset (allowlist + LGPD)
+  routes/                health, connections, schema, tools
+seeds/                   origem (MySQL) com os conflitos; destino (Oracle) propositalmente imperfeito
+scripts/                 demo.ts (ponta a ponta com a AI Layer), evidencias.ts
+tests/                   30 testes (Vitest + Supertest), fixture = schema real do seed
+docs/                    entrega: evidências, validação técnica, arquitetura, usabilidade, roadmap
 ```
 
 A lógica de domínio depende apenas de `DbAdapter`. Incluir suporte a um novo banco significa

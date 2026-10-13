@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/tools/check-charset",
+    "body": {
+      "database": "mysql",
+      "table": "clientes",
+      "column": "email"
+    }
+  },
+  "status": 200,
+  "response": {
+    "status": "OK",
+    "simulated": false,
+    "database": "mysql",
+    "side": "source",
+    "table": "clientes",
+    "column": "email",
+    "charset": "utf8mb4",
+    "collation": "utf8mb4_0900_ai_ci",
+    "maxBytesPerCharacter": 4
+  }
+}

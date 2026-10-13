@@ -168,6 +168,20 @@ export async function profileColumn(registry: Registry, deps: Deps, input: z.inf
   };
 }
 
+/**
+ * LGPD: sample-values so devolve valores de colunas CATEGORICAS (poucos
+ * distintos, que se repetem: flags, status, ENUM). Coluna de alta
+ * cardinalidade (CPF, e-mail, nome, valor monetario) pode ser dado pessoal e,
+ * via AI Layer, iria parar num provedor de LLM: volta mascarada, so com
+ * contagens. ENUM e sempre categorico (os rotulos sao metadado do schema).
+ */
+export const MAX_CATEGORICAL = 20;
+
+export function isCategorical(col: NormColumn, distinct: number, nonNull: number): boolean {
+  if (col.dataType === 'ENUM') return true;
+  return distinct <= MAX_CATEGORICAL && distinct * 2 <= nonNull;
+}
+
 export async function sampleValues(registry: Registry, deps: Deps, input: z.infer<typeof sampleSchema>) {
   const r = await resolve(registry, deps, input);
   if (isNoData(r)) return r;
@@ -176,18 +190,37 @@ export async function sampleValues(registry: Registry, deps: Deps, input: z.infe
     throw new HttpError(400, 'UNSUPPORTED_TYPE', `${r.column.type} nao permite amostra de distintos`);
   }
   const q = d.quote(r.column.rawName);
+  const t = d.quote(r.table.rawName);
+  const stats = await r.adapter.query(
+    `SELECT COUNT(${q}) AS ${d.quote('non_null')}, COUNT(DISTINCT ${q}) AS ${d.quote('distinct_count')} FROM ${t}`,
+  );
+  const nonNullCount = toInt(stats.rows[0]?.non_null, 'COUNT(col)');
+  const distinctCount = toInt(stats.rows[0]?.distinct_count, 'COUNT(DISTINCT col)');
+
+  if (!isCategorical(r.column, distinctCount, nonNullCount)) {
+    return {
+      ...header(r),
+      masked: true,
+      reason: `alta cardinalidade (${distinctCount} distintos em ${nonNullCount} valores): pode ser dado pessoal, valores nao sao expostos`,
+      distinctCount,
+      nonNullCount,
+      values: [],
+      counts: [],
+      truncated: false,
+    };
+  }
+
   const res = await r.adapter.query(
-    d.limit(
-      `SELECT ${q} AS ${d.quote('v')}, COUNT(*) AS ${d.quote('n')} FROM ${d.quote(r.table.rawName)} ` +
-        `WHERE ${q} IS NOT NULL GROUP BY ${q} ORDER BY ${q}`,
-      input.limit + 1,
-    ),
+    d.limit(`SELECT ${q} AS ${d.quote('v')}, COUNT(*) AS ${d.quote('n')} FROM ${t} WHERE ${q} IS NOT NULL GROUP BY ${q} ORDER BY ${q}`, input.limit + 1),
   );
   const rows = res.rows.slice(0, input.limit);
   // Valores como o driver entrega: TINYINT vem number (a regra do Erick
   // compara com 0 e 1); NUMBER/DECIMAL vem string para nao perder precisao.
   return {
     ...header(r),
+    masked: false,
+    distinctCount,
+    nonNullCount,
     values: rows.map((x) => x.v),
     counts: rows.map((x) => ({ value: x.v, count: toInt(x.n, 'COUNT(*)') })),
     truncated: res.rows.length > input.limit,

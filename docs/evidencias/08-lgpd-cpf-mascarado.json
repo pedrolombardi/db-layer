@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/tools/sample-values",
+    "body": {
+      "database": "mysql",
+      "table": "clientes",
+      "column": "cpf"
+    }
+  },
+  "status": 200,
+  "response": {
+    "status": "OK",
+    "simulated": false,
+    "database": "mysql",
+    "side": "source",
+    "table": "clientes",
+    "column": "cpf",
+    "masked": true,
+    "reason": "alta cardinalidade (7 distintos em 7 valores): pode ser dado pessoal, valores nao sao expostos",
+    "distinctCount": 7,
+    "nonNullCount": 7,
+    "values": [],
+    "counts": [],
+    "truncated": false
+  }
+}

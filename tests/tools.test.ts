@@ -86,13 +86,24 @@ describe('tools: a IA escolhe a evidencia, nunca como consultar', () => {
   });
 
   it('sample-values devolve inteiros como number (a regra do ativo compara com 0 e 1)', async () => {
-    const { app } = setup(() => ({
-      rows: [{ v: 0, n: '1' }, { v: 1, n: '7' }, { v: 2, n: '2' }],
-      rowCount: 3,
-    }));
+    const { app } = setup((sql) =>
+      sql.includes('COUNT(DISTINCT')
+        ? one({ non_null: '10', distinct_count: '3' })
+        : { rows: [{ v: 0, n: '1' }, { v: 1, n: '7' }, { v: 2, n: '2' }], rowCount: 3 },
+    );
     const res = await request(app).post('/tools/sample-values').send({ database: 'mysql', table: 'clientes', column: 'ativo' });
+    expect(res.body.masked).toBe(false);
     expect(res.body.values).toEqual([0, 1, 2]);
     expect(res.body.counts[1]).toEqual({ value: 1, count: 7 });
+  });
+
+  it('LGPD: coluna de alta cardinalidade (CPF) volta mascarada e os valores nem sao lidos', async () => {
+    const { app, queries } = setup(() => one({ non_null: '8', distinct_count: '8' }));
+    const res = await request(app).post('/tools/sample-values').send({ database: 'mysql', table: 'clientes', column: 'cpf' });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ status: 'OK', masked: true, values: [], counts: [], distinctCount: 8 });
+    expect(queries).toHaveLength(1);
+    expect(queries[0]).not.toContain('GROUP BY');
   });
 });
 

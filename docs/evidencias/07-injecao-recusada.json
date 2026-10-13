@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/tools/profile-column",
+    "body": {
+      "database": "mysql",
+      "table": "clientes; DROP TABLE clientes",
+      "column": "email"
+    }
+  },
+  "status": 400,
+  "response": {
+    "code": "INVALID_IDENTIFIER",
+    "error": "table invalido: \"clientes; DROP TABLE clientes\" - nenhuma consulta foi executada"
+  }
+}

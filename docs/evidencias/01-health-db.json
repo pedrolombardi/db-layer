@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/health/db"
+  },
+  "status": 200,
+  "response": {
+    "status": "ok",
+    "source": {
+      "connected": true,
+      "engine": "mysql",
+      "role": "source",
+      "version": "8.0.46",
+      "schema": "vendas",
+      "charset": "utf8mb4",
+      "readOnly": true,
+      "latencyMs": 2
+    },
+    "target": {
+      "connected": true,
+      "engine": "oracle",
+      "role": "target",
+      "version": "23.26.3.0.0",
+      "schema": "VENDAS",
+      "charset": "AL32UTF8",
+      "readOnly": false,
+      "latencyMs": 2
+    }
+  }
+}
