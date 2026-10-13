@@ -124,6 +124,7 @@ describe('schema routes', () => {
     const { app } = setup();
     expect((await request(app).get('/schema/introspect?side=x')).status).toBe(400);
     const res = await request(app).get('/schema/introspect?side=target');
-    expect(res.body.target.tables).toHaveLength(3);
+    expect(res.body.side).toBe('target');
+    expect(res.body.tables).toHaveLength(3);
   });
 });

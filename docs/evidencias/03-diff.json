@@ -60,7 +60,13 @@
           "charset": null,
           "collation": null
         },
-        "probe": null
+        "probe": null,
+        "id": "clientes.id",
+        "kind": "mechanical",
+        "sourceType": "INT",
+        "targetType": "NUMBER(10)",
+        "description": "equivalência direta INT → NUMBER(10)",
+        "resolution": "Mapear INT -> NUMBER(10) (aviso: ressincronizar a IDENTITY depois da carga (START WITH LIMIT VALUE))"
       },
       {
         "conflictId": "clientes.nome",
@@ -108,7 +114,13 @@
           "charset": "AL32UTF8",
           "collation": "USING_NLS_COMP"
         },
-        "probe": null
+        "probe": null,
+        "id": "clientes.nome",
+        "kind": "mechanical",
+        "sourceType": "VARCHAR(120)",
+        "targetType": "VARCHAR2(120 CHAR)",
+        "description": "equivalência direta VARCHAR(120) → VARCHAR2(120 CHAR)",
+        "resolution": "Mapear VARCHAR(120) -> VARCHAR2(120 CHAR)"
       },
       {
         "conflictId": "clientes.email",
@@ -164,7 +176,12 @@
           "maxObservedLength": 226,
           "unit": "BYTE",
           "targetLimit": 200
-        }
+        },
+        "id": "clientes.email",
+        "kind": "judgement",
+        "sourceType": "VARCHAR(300)",
+        "targetType": "VARCHAR2(200)",
+        "description": "2 valores excedem o tamanho declarado no destino (máx. 226 > 200 bytes)"
       },
       {
         "conflictId": "clientes.cpf",
@@ -220,7 +237,13 @@
           "maxObservedLength": 11,
           "unit": "BYTE",
           "targetLimit": 11
-        }
+        },
+        "id": "clientes.cpf",
+        "kind": "mechanical",
+        "sourceType": "CHAR(11)",
+        "targetType": "CHAR(11)",
+        "description": "equivalência direta CHAR(11) → CHAR(11)",
+        "resolution": "Mapear CHAR(11) -> CHAR(11) (aviso: destino menor que o pior caso da origem (CHAR(11)), mas os dados atuais cabem (máx. 11 bytes))"
       },
       {
         "conflictId": "clientes.ativo",
@@ -286,7 +309,12 @@
               "count": 2
             }
           ]
-        }
+        },
+        "id": "clientes.ativo",
+        "kind": "judgement",
+        "sourceType": "TINYINT(1)",
+        "targetType": "NUMBER(1)",
+        "description": "TINYINT(1) parece booleano, mas o significado é regra de negócio; distintos: 0 (1×), 1 (7×), 2 (2×)"
       },
       {
         "conflictId": "clientes.saldo",
@@ -334,7 +362,13 @@
           "charset": null,
           "collation": null
         },
-        "probe": null
+        "probe": null,
+        "id": "clientes.saldo",
+        "kind": "mechanical",
+        "sourceType": "DECIMAL(18,4)",
+        "targetType": "NUMBER(18,4)",
+        "description": "equivalência direta DECIMAL(18,4) → NUMBER(18,4)",
+        "resolution": "Mapear DECIMAL(18,4) -> NUMBER(18,4)"
       },
       {
         "conflictId": "clientes.criado_em",
@@ -385,7 +419,13 @@
         "probe": {
           "totalRows": 10,
           "zeroDates": 0
-        }
+        },
+        "id": "clientes.criado_em",
+        "kind": "mechanical",
+        "sourceType": "DATETIME",
+        "targetType": "TIMESTAMP(6)",
+        "description": "equivalência direta DATETIME → TIMESTAMP(6)",
+        "resolution": "Mapear DATETIME -> TIMESTAMP(6)"
       },
       {
         "conflictId": "clientes.atualizado_em",
@@ -438,7 +478,12 @@
         "probe": {
           "totalRows": 10,
           "zeroDates": 0
-        }
+        },
+        "id": "clientes.atualizado_em",
+        "kind": "judgement",
+        "sourceType": "DATETIME",
+        "targetType": "TIMESTAMP(6)",
+        "description": "ON UPDATE CURRENT_TIMESTAMP não existe no Oracle: o comportamento se perde em silêncio sem trigger"
       },
       {
         "conflictId": "eventos.id",
@@ -488,7 +533,13 @@
           "charset": null,
           "collation": null
         },
-        "probe": null
+        "probe": null,
+        "id": "eventos.id",
+        "kind": "mechanical",
+        "sourceType": "BIGINT",
+        "targetType": "NUMBER(19)",
+        "description": "equivalência direta BIGINT → NUMBER(19)",
+        "resolution": "Mapear BIGINT -> NUMBER(19) (aviso: ressincronizar a IDENTITY depois da carga (START WITH LIMIT VALUE))"
       },
       {
         "conflictId": "eventos.pedido_id",
@@ -536,7 +587,13 @@
           "charset": null,
           "collation": null
         },
-        "probe": null
+        "probe": null,
+        "id": "eventos.pedido_id",
+        "kind": "mechanical",
+        "sourceType": "INT",
+        "targetType": "NUMBER(10)",
+        "description": "equivalência direta INT → NUMBER(10)",
+        "resolution": "Mapear INT -> NUMBER(10)"
       },
       {
         "conflictId": "eventos.tipo",
@@ -584,7 +641,13 @@
           "charset": "AL32UTF8",
           "collation": "USING_NLS_COMP"
         },
-        "probe": null
+        "probe": null,
+        "id": "eventos.tipo",
+        "kind": "mechanical",
+        "sourceType": "VARCHAR(60)",
+        "targetType": "VARCHAR2(60 CHAR)",
+        "description": "equivalência direta VARCHAR(60) → VARCHAR2(60 CHAR)",
+        "resolution": "Mapear VARCHAR(60) -> VARCHAR2(60 CHAR)"
       },
       {
         "conflictId": "eventos.dados",
@@ -634,7 +697,12 @@
           "charset": "AL32UTF8",
           "collation": "USING_NLS_COMP"
         },
-        "probe": null
+        "probe": null,
+        "id": "eventos.dados",
+        "kind": "judgement",
+        "sourceType": "JSON",
+        "targetType": "CLOB",
+        "description": "JSON → CLOB perde a validação de JSON; o 23ai tem tipo JSON nativo — decisão de design"
       },
       {
         "conflictId": "eventos.valor",
@@ -682,7 +750,13 @@
           "charset": null,
           "collation": null
         },
-        "probe": null
+        "probe": null,
+        "id": "eventos.valor",
+        "kind": "mechanical",
+        "sourceType": "DOUBLE",
+        "targetType": "BINARY_DOUBLE",
+        "description": "equivalência direta DOUBLE → BINARY_DOUBLE",
+        "resolution": "Mapear DOUBLE -> BINARY_DOUBLE"
       },
       {
         "conflictId": "eventos.ocorrido_em",
@@ -735,7 +809,13 @@
         "probe": {
           "totalRows": 4,
           "zeroDates": 0
-        }
+        },
+        "id": "eventos.ocorrido_em",
+        "kind": "mechanical",
+        "sourceType": "TIMESTAMP",
+        "targetType": "TIMESTAMP(6)",
+        "description": "equivalência direta TIMESTAMP → TIMESTAMP(6)",
+        "resolution": "Mapear TIMESTAMP -> TIMESTAMP(6) (aviso: TIMESTAMP do MySQL é guardado em UTC e convertido pelo time_zone da sessão: extrair com time_zone fixo (ex. '+00:00'))"
       },
       {
         "conflictId": "pedidos.id",
@@ -785,7 +865,13 @@
           "charset": null,
           "collation": null
         },
-        "probe": null
+        "probe": null,
+        "id": "pedidos.id",
+        "kind": "mechanical",
+        "sourceType": "INT",
+        "targetType": "NUMBER(10)",
+        "description": "equivalência direta INT → NUMBER(10)",
+        "resolution": "Mapear INT -> NUMBER(10) (aviso: ressincronizar a IDENTITY depois da carga (START WITH LIMIT VALUE))"
       },
       {
         "conflictId": "pedidos.cliente_id",
@@ -833,7 +919,13 @@
           "charset": null,
           "collation": null
         },
-        "probe": null
+        "probe": null,
+        "id": "pedidos.cliente_id",
+        "kind": "mechanical",
+        "sourceType": "INT",
+        "targetType": "NUMBER(10)",
+        "description": "equivalência direta INT → NUMBER(10)",
+        "resolution": "Mapear INT -> NUMBER(10)"
       },
       {
         "conflictId": "pedidos.status",
@@ -886,7 +978,13 @@
           "charset": "AL32UTF8",
           "collation": "USING_NLS_COMP"
         },
-        "probe": null
+        "probe": null,
+        "id": "pedidos.status",
+        "kind": "mechanical",
+        "sourceType": "ENUM('novo','pago','enviado','cancelado')",
+        "targetType": "VARCHAR2(20 CHAR)",
+        "description": "equivalência direta ENUM('novo','pago','enviado','cancelado') → VARCHAR2(20 CHAR)",
+        "resolution": "Mapear ENUM('novo','pago','enviado','cancelado') -> VARCHAR2(20 CHAR)"
       },
       {
         "conflictId": "pedidos.total",
@@ -934,7 +1032,13 @@
           "charset": null,
           "collation": null
         },
-        "probe": null
+        "probe": null,
+        "id": "pedidos.total",
+        "kind": "mechanical",
+        "sourceType": "DECIMAL(18,4)",
+        "targetType": "NUMBER(18,4)",
+        "description": "equivalência direta DECIMAL(18,4) → NUMBER(18,4)",
+        "resolution": "Mapear DECIMAL(18,4) -> NUMBER(18,4)"
       },
       {
         "conflictId": "pedidos.observacao",
@@ -982,7 +1086,13 @@
           "charset": "AL32UTF8",
           "collation": "USING_NLS_COMP"
         },
-        "probe": null
+        "probe": null,
+        "id": "pedidos.observacao",
+        "kind": "mechanical",
+        "sourceType": "TEXT",
+        "targetType": "CLOB",
+        "description": "equivalência direta TEXT → CLOB",
+        "resolution": "Mapear TEXT -> CLOB"
       },
       {
         "conflictId": "pedidos.criado_em",
@@ -1035,7 +1145,12 @@
         "probe": {
           "totalRows": 6,
           "zeroDates": 2
-        }
+        },
+        "id": "pedidos.criado_em",
+        "kind": "judgement",
+        "sourceType": "DATETIME",
+        "targetType": "TIMESTAMP(6)",
+        "description": "2 de 6 linhas com data zero ou parcial (sem equivalente no Oracle)"
       }
     ]
   }

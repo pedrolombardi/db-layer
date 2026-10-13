@@ -14,7 +14,7 @@
       "schema": "vendas",
       "charset": "utf8mb4",
       "readOnly": true,
-      "latencyMs": 2
+      "latencyMs": 4
     },
     "target": {
       "connected": true,
@@ -24,7 +24,7 @@
       "schema": "VENDAS",
       "charset": "AL32UTF8",
       "readOnly": false,
-      "latencyMs": 2
+      "latencyMs": 3
     }
   }
 }

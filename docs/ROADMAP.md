@@ -10,6 +10,7 @@
 - [x] Tools de evidência para a AI Layer (`profile-column`, `sample-values`, `check-charset`)
   com dado real, protegidas contra injeção e com mascaramento LGPD
 - [x] Integração com a AI Layer comprovada ponta a ponta (`npm run demo`)
+- [x] Integração com o Backend Core comprovada: o Core real consome o DB Layer real (contrato coberto por teste)
 - [x] 30 testes, CI, `docker compose` sem configuração manual, evidências reproduzíveis
 
 ## Fase 7 — prioridades
@@ -18,6 +19,7 @@
 |---|---|---|
 | P1 | **Autenticação entre serviços** (token por serviço) | Nenhum endpoint deveria ficar aberto fora da rede local |
 | P1 | **Amostragem e limite de tempo nos probes** | Ler a tabela inteira inviabiliza tabelas grandes de produção |
+| P1 | **Credenciais por migração** (Connection Manager): hoje o DB Layer usa as conexões configuradas e recusa outras com 400 | O Core já envia host/database/usuário da origem |
 | P1 | **`/validate/plan`**: validar deterministicamente o plano de migração | É o "quem valida não é quem propõe" aplicado ao plano. Depende de acertar o formato do plano com o Core |
 | P2 | **Cache do catálogo** com expiração | Cada chamada de tool relê os dois catálogos hoje |
 | P2 | **Regras novas**: string vazia vira NULL no Oracle (quebra `NOT NULL`); defaults; índices únicos com prefixo | Mais riscos que hoje passam em silêncio ficam visíveis |
@@ -25,6 +27,13 @@
 | P3 | **Adaptador PostgreSQL** | Prova que a arquitetura de adaptadores escala para um terceiro banco |
 | P3 | **Observabilidade**: logs estruturados (ex. `pino`) e métricas por probe | Diagnóstico em produção |
 | P3 | **Gerenciador de segredos** no lugar das credenciais do compose | Exigência para qualquer ambiente fora do local |
+
+## Decisão pendente no grupo
+
+O Core chama `POST /plan/apply` (escrita no destino), que **não está** no documento da Fase 6.
+O próprio README do Core marca a rota como suposição. Escrever no destino depois da homologação
+pede uma decisão explícita do grupo sobre quem escreve e com que garantias. Até lá, o DB Layer não
+escreve em banco nenhum.
 
 ## Fora do escopo do DB Layer
 

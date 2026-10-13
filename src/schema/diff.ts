@@ -34,7 +34,7 @@ function probeView(p: Probe | null): ProbeView | null {
 
 type SideView = { database: string; type: string } & Partial<NormColumn>;
 
-export interface DiffEntry {
+interface BaseEntry {
   /** deterministico: tabela.coluna (repassavel direto ao /ai/analyze-conflict) */
   conflictId: string;
   table: string;
@@ -46,6 +46,37 @@ export interface DiffEntry {
   source: SideView;
   target: SideView;
   probe: ProbeView | null;
+}
+
+/**
+ * Campos no formato que o Backend Core espera (backend/src/schemas.ts do Giovanni):
+ * id, kind (mechanical|judgement), sourceType, targetType, description e, no
+ * mecanico, resolution - sem ela o Core manda o conflito para a IA.
+ * Sao aditivos: os campos nativos continuam (a AI Layer usa conflictId/source.type).
+ */
+interface CoreFields {
+  id: string;
+  kind: 'mechanical' | 'judgement';
+  sourceType: string;
+  targetType: string;
+  description: string;
+  resolution?: string;
+}
+
+export type DiffEntry = BaseEntry & CoreFields;
+
+function withCoreFields(e: BaseEntry): DiffEntry {
+  const mechanical = e.classification === 'mecanico';
+  const warnings = e.warnings.length > 0 ? ` (aviso: ${e.warnings.join('; ')})` : '';
+  return {
+    ...e,
+    id: e.conflictId,
+    kind: mechanical ? 'mechanical' : 'judgement',
+    sourceType: e.source.type,
+    targetType: e.target.type,
+    description: e.reason,
+    ...(mechanical ? { resolution: `Mapear ${e.source.type} -> ${e.target.type}${warnings}` } : {}),
+  };
 }
 
 export interface DiffResult {
@@ -72,7 +103,7 @@ function checkInValues(table: NormTable, column: NormColumn): string[] | null {
 
 const view = (engine: string, col: NormColumn): SideView => ({ database: engine, ...col });
 
-function missing(table: string, column: string, srcEngine: string, tgtEngine: string, src: NormColumn | null, tgt: NormColumn | null, rule: string, reason: string): DiffEntry {
+function missing(table: string, column: string, srcEngine: string, tgtEngine: string, src: NormColumn | null, tgt: NormColumn | null, rule: string, reason: string): BaseEntry {
   return {
     conflictId: `${table}.${column}`,
     table,
@@ -88,7 +119,7 @@ function missing(table: string, column: string, srcEngine: string, tgtEngine: st
 }
 
 export async function diffSchemas(source: NormSchema, target: NormSchema, runner: ProbeRunner): Promise<DiffResult> {
-  const entries: DiffEntry[] = [];
+  const entries: BaseEntry[] = [];
   const tableNames = new Set([...source.tables.map((t) => t.name), ...target.tables.map((t) => t.name)]);
 
   for (const st of source.tables) {
@@ -146,6 +177,6 @@ export async function diffSchemas(source: NormSchema, target: NormSchema, runner
       mecanico: entries.filter((e) => e.classification === 'mecanico').length,
       julgamento: entries.filter((e) => e.classification === 'julgamento').length,
     },
-    conflicts: entries,
+    conflicts: entries.map(withCoreFields),
   };
 }

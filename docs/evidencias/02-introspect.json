@@ -289,7 +289,9 @@
               "refTable": "pedidos",
               "refColumns": [
                 "id"
-              ]
+              ],
+              "column": "pedido_id",
+              "references": "pedidos.id"
             }
           ],
           "checks": []
@@ -424,7 +426,9 @@
               "refTable": "clientes",
               "refColumns": [
                 "id"
-              ]
+              ],
+              "column": "cliente_id",
+              "references": "clientes.id"
             }
           ],
           "checks": []
@@ -715,7 +719,9 @@
               "refTable": "pedidos",
               "refColumns": [
                 "id"
-              ]
+              ],
+              "column": "pedido_id",
+              "references": "pedidos.id"
             }
           ],
           "checks": []
@@ -845,7 +851,9 @@
               "refTable": "clientes",
               "refColumns": [
                 "id"
-              ]
+              ],
+              "column": "cliente_id",
+              "references": "clientes.id"
             }
           ],
           "checks": [

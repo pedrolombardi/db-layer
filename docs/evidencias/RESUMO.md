@@ -1,6 +1,6 @@
 # Evidências da PoC — DB Layer
 
-Gerado por `npm run evidencias` em 2026-10-13T17:17:14.569Z contra http://localhost:3002
+Gerado por `npm run evidencias` em 2026-10-13T20:58:01.867Z contra http://localhost:3002
 (bancos reais do `docker compose`: MySQL 8.0 e Oracle Database 23ai Free).
 
 | # | Evidência | Requisição | HTTP | Destaque |

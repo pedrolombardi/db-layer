@@ -27,6 +27,14 @@ saídas estão em [`evidencias/`](evidencias/RESUMO.md).
 | Brechas na guarda de somente-leitura | `WITH … DELETE`, `EXPLAIN ANALYZE DELETE` (que executa), `SELECT … INTO OUTFILE`, `/*! */` (comentário que o MySQL executa) e `1--1` passavam | Varredura que respeita aspas e procura efeitos colaterais **sem remover comentários** (na dúvida, recusa) + testes |
 | Validação falsa | Um processo de desenvolvimento órfão continuou na porta 3002 e respondeu no lugar do container | Lição: conferir **qual processo** responde antes de dar algo como validado. A validação final foi refeita contra o container, do zero (`down -v`) |
 
+### Integração com o Backend Core (validada)
+
+O Backend Core do grupo (código do Giovanni, **sem alteração**) foi apontado para este DB Layer
+real e montou a proposta: *"3 tabelas e 20 conflitos: 15 resolvidos por regra, …"*
+([evidência 9](evidencias/09-integracao-backend-core.json)). Os formatos que o Core espera eram
+suposição do lado dele. O DB Layer passou a aceitá-los **sem remover** os campos que já usava, e
+`tests/core-contract.test.ts` trava esse contrato. A AI Layer e o Data Layer ainda eram mocks.
+
 ## 3. Riscos técnicos
 
 | Risco | Impacto | Mitigação | Situação |
@@ -37,6 +45,8 @@ saídas estão em [`evidencias/`](evidencias/RESUMO.md).
 | API sem autenticação | Alto em produção | Fora do MVP; rede interna do compose | ⏳ Fase 7 |
 | Credenciais de desenvolvimento no `docker-compose.yml` | Médio | Valem só para o ambiente local; em produção, gerenciador de segredos | ⏳ Fase 7 |
 | Contrato com a AI Layer baseado em texto de tipo (`"VARCHAR2(200)"`) | Médio | O DB Layer renderiza o formato exato **e** envia os campos estruturados | ⚠️ a AI Layer precisa migrar |
+| O Core envia as credenciais da origem por migração, mas o DB Layer usa as conexões configuradas nele | Alto: analisaria outro banco em silêncio | Engine e database diferentes do configurado → **400** `CONNECTION_MISMATCH` | ✅ mitigado; credencial por migração na Fase 7 |
+| Mock da IA no Core contradiz o dado real: propõe `ativo` como booleano (0/1), mas existe o valor `2` | Alto, se o mock for apresentado como resultado | A AI Layer real (Erick) dá DEFER com a evidência do DB Layer | ⚠️ integrar a AI Layer real no Core |
 | Origem e destino no mesmo engine (ex.: Oracle → Oracle) | Médio | Parâmetro opcional `side` nas tools | ✅ suportado |
 | Ambiente pesado: Oracle Free usa ~2 GB de RAM | Baixo | Documentado; a imagem tem versão arm64 (Mac M) | ✅ |
 
@@ -66,7 +76,7 @@ saídas estão em [`evidencias/`](evidencias/RESUMO.md).
 
 ## 6. Qualidade
 
-30 testes automatizados ([saída](evidencias/testes.txt)) cobrindo:
+35 testes automatizados ([saída](evidencias/testes.txt)) cobrindo:
 - o classificador, com o schema real do seed como fixture;
 - a normalização dos catálogos;
 - a guarda de somente-leitura;
