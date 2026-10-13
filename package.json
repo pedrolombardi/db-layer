@@ -10,7 +10,8 @@
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --ext .ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "demo": "tsx scripts/demo.ts"
   },
   "dependencies": {
     "express": "^5.3.0",

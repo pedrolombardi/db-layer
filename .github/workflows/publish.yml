@@ -1,0 +1,43 @@
+name: Publish image
+
+# Publica a imagem no GHCR a cada push na main, para ninguem do grupo precisar
+# buildar Docker na mao: `docker pull ghcr.io/<dono>/<repo>:latest`.
+# ATENCAO: o pacote pode nascer privado. Em Packages > (pacote) > Package
+# settings, tornar publico ou dar acesso ao grupo.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # metadata-action poe o nome em minusculo (o GHCR recusa maiuscula)
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+      # amd64 + arm64: o Oracle Free ja roda nativo em Mac M; a nossa imagem tambem
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

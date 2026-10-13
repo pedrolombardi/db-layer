@@ -21,55 +21,72 @@ migração.
 - Node.js 20+ (apenas para rodar fora do container)
 - ~4 GB de RAM livres (o container do Oracle é pesado)
 
-> **Mac com Apple Silicon (M1/M2/M3/M4):** o Oracle Database não roda nativamente em ARM.
-> As alternativas são rodar sob emulação x86 (lento, mas funciona — Docker Desktop com Rosetta,
-> ou Colima com `--arch x86_64`) ou apontar `TGT_*` para uma instância Oracle remota
-> (por exemplo, a do OCI). Verifique isso **antes** de perder tempo depurando o container.
+> **Mac com Apple Silicon:** a imagem `gvenzl/oracle-free:23-slim` tem versão `linux/arm64` e roda
+> nativo no Docker Desktop.
 
 ## Subindo o ambiente
 
 ```bash
-cp .env.example .env
-docker compose up
+docker compose up --build        # nao precisa de .env
 ```
 
-O primeiro boot do Oracle leva alguns minutos — ele cria o banco do zero. Os boots seguintes
-reaproveitam o volume e são rápidos. Acompanhe com:
+O primeiro boot do Oracle cria o banco, e os scripts de `seeds/` **só rodam no primeiro boot**.
+Depois de mudar um seed, rode `docker compose down -v` (isso apaga os volumes).
+
+## Desenvolvimento sem Docker para o serviço
+
+Os bancos ficam no compose e o serviço roda no host:
 
 ```bash
-docker compose logs -f oracle-free
-```
-
-Quando tudo estiver de pé:
-
-```bash
-curl localhost:3001/health          # liveness — não toca nos bancos
-curl localhost:3001/health/db       # readiness — abre conexão REAL nos dois
-```
-
-`GET /health/db` responde `200` quando os dois lados conectam e `503` quando algum falha,
-sempre indicando **qual** lado e por quê.
-
-## Desenvolvimento sem Docker
-
-```bash
+docker compose up -d mysql oracle-free
+cp .env.example .env               # aponta para localhost:3307 / localhost:1521
 npm install
-npm run dev        # tsx watch
-npm test           # vitest
-npm run typecheck
-npm run lint
-npm run build
+npm run dev                        # tsx watch, porta 3002
+npm test && npm run typecheck && npm run lint && npm run build
 ```
 
-## Endpoints
+## Endpoints (porta 3002)
 
-| Método | Rota                  | Descrição                                        |
-|--------|-----------------------|--------------------------------------------------|
-| GET    | `/health`             | status do processo                                |
-| GET    | `/health/db`          | abre conexão real na origem e no destino          |
-| POST   | `/connections/test`   | metadados da conexão (`{"role":"source"\|"target"}`) |
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/health` | status do processo |
+| GET | `/health/db` | conexão real nos dois lados (200/503, dizendo qual caiu) |
+| POST | `/connections/test` | metadados de um lado (`{"role":"source"\|"target"}`) |
+| GET | `/schema/introspect?side=source\|target` | modelo normalizado (default: os dois) |
+| POST | `/schema/diff` | todas as colunas pareadas, `mecanico \| julgamento`, com regra e motivo |
+| POST | `/tools/profile-column` | `{database, table, column, threshold?}` → tamanhos, nulos, quantos estouram |
+| POST | `/tools/sample-values` | `{database, table, column, limit?}` → valores distintos e contagens |
+| POST | `/tools/check-charset` | `{database, table, column}` → charset, collation e bytes por caractere |
 
-Planejados (próxima etapa): `/schema/introspect`, `/schema/diff`, `/tools/*`, `/validate/plan`.
+Tools: nome inválido (ex. `"clientes; DROP TABLE clientes"`) → **400** `INVALID_IDENTIFIER`, sem
+nenhuma consulta. Nome válido, mas fora do catálogo → **200** `status: "NO_DATA"`.
+
+## Roteiro da demo
+
+**bash**
+```bash
+curl localhost:3002/health/db
+curl -X POST localhost:3002/schema/diff
+curl -X POST localhost:3002/tools/profile-column -H "content-type: application/json"   -d '{"database":"mysql","table":"clientes","column":"email"}'
+curl -X POST localhost:3002/tools/profile-column -H "content-type: application/json"   -d '{"database":"mysql","table":"clientes; DROP TABLE clientes","column":"email"}'
+npm run demo        # precisa da AI Layer na 3001
+```
+
+**PowerShell** (no 5.1, `curl` é `Invoke-WebRequest`; use `Invoke-RestMethod`)
+```powershell
+Invoke-RestMethod http://localhost:3002/health/db | ConvertTo-Json -Depth 5
+(Invoke-RestMethod -Method Post http://localhost:3002/schema/diff).summary
+$b = @{ database = "mysql"; table = "clientes"; column = "email" } | ConvertTo-Json
+Invoke-RestMethod -Method Post http://localhost:3002/tools/profile-column -ContentType "application/json" -Body $b
+$b = @{ database = "mysql"; table = "clientes; DROP TABLE clientes"; column = "email" } | ConvertTo-Json
+try { Invoke-RestMethod -Method Post http://localhost:3002/tools/profile-column -ContentType "application/json" -Body $b } catch { $_.ErrorDetails.Message }
+npm run demo
+```
+
+`npm run demo` chama o diff, manda cada conflito de julgamento para o `/ai/analyze-conflict` e
+imprime `conflictId | regra | veredito | evidência`. A evidência mostrada é sempre a do DB Layer.
+Se a AI Layer ainda estiver em mock, o veredito aparece marcado como `(AI simulada)`.
+Para outras portas, use `DB_LAYER_URL` / `AI_LAYER_URL`.
 
 ## Os dados de exemplo
 
@@ -78,7 +95,7 @@ Os seeds não são genéricos: cada tabela carrega um conflito real de migraçã
 
 | # | Onde                  | Conflito                                                        |
 |---|-----------------------|-----------------------------------------------------------------|
-| 1 | `clientes.email`      | `VARCHAR(300)` na origem, `VARCHAR2(200 CHAR)` no destino — 2 registros excedem |
+| 1 | `clientes.email`      | `VARCHAR(300)` na origem, `VARCHAR2(200)` (BYTE) no destino — 2 registros excedem (216 e 226) |
 | 2 | `clientes.ativo`      | `TINYINT(1)` que parece boolean, mas contém o valor `2`         |
 | 3 | `clientes.id`         | `AUTO_INCREMENT` → `IDENTITY`                                    |
 | 4 | `pedidos.status`      | `ENUM` (não existe no Oracle) → `VARCHAR2` + `CHECK`             |
@@ -86,6 +103,9 @@ Os seeds não são genéricos: cada tabela carrega um conflito real de migraçã
 | 6 | `pedidos.observacao`  | `TEXT` → `CLOB`                                                  |
 | 7 | `eventos.dados`       | `JSON` → `JSON` nativo (23ai) ou `CLOB`                          |
 | 8 | `eventos.valor`       | `DOUBLE` → `BINARY_DOUBLE` ou `NUMBER`                           |
+
+Resultado esperado do diff: **20 colunas → 15 mecânico / 5 julgamento** (`clientes.email`,
+`clientes.ativo`, `clientes.atualizado_em`, `pedidos.criado_em`, `eventos.dados`).
 
 O conflito 2 é o caso que o agente deve **deferir**: o valor `2` prova que a coluna não é
 boolean, e o que ele significa não está no banco — só quem conhece a regra de negócio sabe.
