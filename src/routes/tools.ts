@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { Registry } from '../db/registry';
 import { Deps } from '../deps';
+import { parseBody } from '../http';
 import {
   charsetSchema,
   checkCharset,
-  parseBody,
   profileColumn,
   profileSchema,
   sampleSchema,

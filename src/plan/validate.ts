@@ -155,7 +155,7 @@ export async function validatePlan(registry: Registry, deps: Deps, conflicts: Pl
   }
 
   // 2. Carga do dataset anonimizado no sandbox, nos tipos planejados
-  await sandbox.withConnection(async (conn) => {
+  await sandbox.exclusive(() => sandbox.withConnection(async (conn) => {
     const loaded = tables.filter((t) => dataset.some((d) => d.name.toLowerCase() === t.name));
     for (const t of [...loaded].reverse()) {
       await conn.execute(`BEGIN EXECUTE IMMEDIATE 'DROP TABLE "${t.rawName}" CASCADE CONSTRAINTS PURGE'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;`);
@@ -225,7 +225,7 @@ export async function validatePlan(registry: Registry, deps: Deps, conflicts: Pl
         if (inSandbox !== inSource) issues.foreign_keys.push(`${t.name}.${fk.columns[0]}: ${inSandbox} orfao(s) no sandbox, ${inSource} na origem`);
       }
     }
-  });
+  }));
 
   const checks: Check[] = [
     { name: 'row_count', passed: issues.row_count.length === 0, detail: counts.join(', ') || 'sem tabelas no dataset' },
@@ -239,7 +239,5 @@ export async function validatePlan(registry: Registry, deps: Deps, conflicts: Pl
     checks,
     issues: checks.filter((c) => !c.passed).map((c) => `${c.name}: ${c.detail}`),
     sandbox: { schema: sandbox.schema },
-    invalidSource,
-    tables,
   };
 }

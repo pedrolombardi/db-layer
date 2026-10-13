@@ -5,7 +5,7 @@ import { Deps } from '../deps';
 import { extractSample } from '../plan/extract';
 import { loadOrder, migrationScript, planTables } from '../plan/model';
 import { sourceFacts, validatePlan } from '../plan/validate';
-import { parseBody } from '../tools/tools';
+import { parseBody } from '../http';
 
 const conflictSchema = z
   .object({

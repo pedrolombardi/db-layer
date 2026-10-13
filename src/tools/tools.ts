@@ -47,14 +47,6 @@ interface NoData {
 
 const otherSide = (s: Side): Side => (s === 'source' ? 'target' : 'source');
 
-export function parseBody<T extends z.ZodTypeAny>(schema: T, body: unknown): z.infer<T> {
-  const parsed = schema.safeParse(body ?? {});
-  if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
-    throw new HttpError(400, 'INVALID_BODY', msg);
-  }
-  return parsed.data;
-}
 
 function pickSide(registry: Registry, input: BaseInput): Side {
   const candidates = (['source', 'target'] as const).filter((s) => registry[s].engine === input.database);

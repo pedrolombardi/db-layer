@@ -100,7 +100,7 @@ A primeira conexão e o primeiro DDL no Oracle levavam ~13 s; o sandbox agora é
 
 ## 6. Qualidade
 
-41 testes automatizados ([saída](evidencias/testes.txt)) cobrindo:
+43 testes automatizados ([saída](evidencias/testes.txt)) cobrindo:
 - o classificador, com o schema real do seed como fixture;
 - a normalização dos catálogos;
 - a guarda de somente-leitura;

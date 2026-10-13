@@ -1,11 +1,12 @@
  RUN  v2.1.9 C:/claude/tcc/db-layer
- ✓ tests/readonly.test.ts (7 tests) 13ms
+ ✓ tests/readonly.test.ts (7 tests) 12ms
  ✓ tests/plan.test.ts (6 tests) 8ms
- ✓ tests/classify.test.ts (10 tests) 24ms
- ✓ tests/health.test.ts (5 tests) 83ms
- ✓ tests/core-contract.test.ts (5 tests) 102ms
- ✓ tests/tools.test.ts (8 tests) 116ms
- Test Files  6 passed (6)
-      Tests  41 passed (41)
-   Start at  20:03:21
-   Duration  2.78s (transform 867ms, setup 0ms, collect 6.44s, tests 346ms, environment 2ms, prepare 2.42s)
+ ✓ tests/classify.test.ts (10 tests) 18ms
+ ✓ tests/sandbox.test.ts (2 tests) 68ms
+ ✓ tests/health.test.ts (5 tests) 92ms
+ ✓ tests/core-contract.test.ts (5 tests) 99ms
+ ✓ tests/tools.test.ts (8 tests) 124ms
+ Test Files  7 passed (7)
+      Tests  43 passed (43)
+   Start at  20:40:36
+   Duration  1.55s (transform 576ms, setup 0ms, collect 3.26s, tests 420ms, environment 2ms, prepare 1.45s)

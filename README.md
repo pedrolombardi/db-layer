@@ -133,7 +133,7 @@ src/
   routes/                health, connections, schema, tools
 seeds/                   origem (MySQL) com os conflitos; destino (Oracle) propositalmente imperfeito
 scripts/                 demo.ts (ponta a ponta com a AI Layer), evidencias.ts
-tests/                   41 testes (Vitest + Supertest; contrato do Core em core-contract), fixture = schema real do seed
+tests/                   43 testes (Vitest + Supertest; contrato do Core em core-contract), fixture = schema real do seed
 docs/                    entrega: evidências, validação técnica, arquitetura, usabilidade, roadmap
 ```
 

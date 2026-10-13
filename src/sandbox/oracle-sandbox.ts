@@ -17,6 +17,7 @@ export interface SandboxConfig {
  */
 export class OracleSandbox {
   private pool?: oracledb.Pool;
+  private queue: Promise<unknown> = Promise.resolve();
 
   constructor(private readonly cfg: SandboxConfig) {}
 
@@ -54,6 +55,17 @@ export class OracleSandbox {
     if (!this.pool) return;
     await this.pool.close(5);
     this.pool = undefined;
+  }
+
+  /**
+   * Uma validacao por vez: o sandbox recria tabelas com os nomes do destino,
+   * entao duas execucoes simultaneas leriam o dado uma da outra. Serializa
+   * no processo (o DB Layer roda como uma instancia por sandbox no MVP).
+   */
+  exclusive<T>(fn: () => Promise<T>): Promise<T> {
+    const run = this.queue.then(fn, fn);
+    this.queue = run.catch(() => undefined);
+    return run;
   }
 
   async withConnection<T>(fn: (conn: oracledb.Connection) => Promise<T>): Promise<T> {

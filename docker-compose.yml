@@ -16,7 +16,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: vendas
     ports:
-      - "3307:3306"          # 3307 no host para nao conflitar com MySQL local
+      - "127.0.0.1:3307:3306"          # 3307 no host para nao conflitar com MySQL local
     volumes:
       - mysql-data:/var/lib/mysql
       - ./seeds/mysql:/docker-entrypoint-initdb.d:ro
@@ -38,7 +38,7 @@ services:
       APP_USER: vendas                 # usuario da aplicacao
       APP_USER_PASSWORD: vendas
     ports:
-      - "1521:1521"
+      - "127.0.0.1:1521:1521"
     volumes:
       - oracle-data:/opt/oracle/oradata
       - ./seeds/oracle:/container-entrypoint-initdb.d:ro
@@ -69,7 +69,7 @@ services:
       SBX_USER: sandbox
       SBX_PASSWORD: sandbox
     ports:
-      - "3002:3002"
+      - "127.0.0.1:3002:3002"
     depends_on:
       mysql:
         condition: service_healthy

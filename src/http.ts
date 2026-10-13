@@ -1,4 +1,5 @@
 import { ErrorRequestHandler } from 'express';
+import { z } from 'zod';
 import { DbLayerError } from './db/types';
 
 /** Erro com status HTTP e codigo estavel para a API. */
@@ -11,6 +12,16 @@ export class HttpError extends Error {
     super(message);
     this.name = 'HttpError';
   }
+}
+
+/** Valida o corpo com Zod; erro vira 400 INVALID_BODY com as mensagens. */
+export function parseBody<T extends z.ZodTypeAny>(schema: T, body: unknown): z.infer<T> {
+  const parsed = schema.safeParse(body ?? {});
+  if (!parsed.success) {
+    const msg = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
+    throw new HttpError(400, 'INVALID_BODY', msg);
+  }
+  return parsed.data;
 }
 
 const DB_STATUS: Record<DbLayerError['code'], number> = {
