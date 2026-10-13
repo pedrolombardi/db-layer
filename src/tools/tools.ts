@@ -175,9 +175,9 @@ export async function profileColumn(registry: Registry, deps: Deps, input: z.inf
  * via AI Layer, iria parar num provedor de LLM: volta mascarada, so com
  * contagens. ENUM e sempre categorico (os rotulos sao metadado do schema).
  */
-export const MAX_CATEGORICAL = 20;
+const MAX_CATEGORICAL = 20;
 
-export function isCategorical(col: NormColumn, distinct: number, nonNull: number): boolean {
+function isCategorical(col: NormColumn, distinct: number, nonNull: number): boolean {
   if (col.dataType === 'ENUM') return true;
   return distinct <= MAX_CATEGORICAL && distinct * 2 <= nonNull;
 }

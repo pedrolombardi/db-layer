@@ -2,7 +2,7 @@
 
 Microserviço responsável pela interação com os bancos de dados da plataforma de migração:
 conexão com bancos heterogêneos, introspecção de schema, detecção de conflitos, execução das
-consultas que servem de evidência para a AI Layer e validação determinística dos planos de
+consultas que servem de evidência para a AI Layer e, na Fase 7, validação determinística dos planos de
 migração.
 
 **Regras estruturais do serviço:**

@@ -18,7 +18,6 @@ const DB_STATUS: Record<DbLayerError['code'], number> = {
   NOT_CONNECTED: 503,
   QUERY_FAILED: 502,
   READ_ONLY_VIOLATION: 403,
-  NOT_SUPPORTED: 400,
 };
 
 /**

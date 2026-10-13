@@ -1,9 +1,9 @@
  RUN  v2.1.9 C:/claude/tcc/db-layer
- ✓ tests/readonly.test.ts (5 tests) 5ms
+ ✓ tests/readonly.test.ts (7 tests) 12ms
  ✓ tests/classify.test.ts (10 tests) 13ms
- ✓ tests/health.test.ts (5 tests) 63ms
- ✓ tests/tools.test.ts (8 tests) 92ms
+ ✓ tests/health.test.ts (5 tests) 80ms
+ ✓ tests/tools.test.ts (8 tests) 113ms
  Test Files  4 passed (4)
-      Tests  28 passed (28)
-   Start at  22:22:58
-   Duration  1.30s (transform 309ms, setup 0ms, collect 1.55s, tests 173ms, environment 1ms, prepare 1.43s)
+      Tests  30 passed (30)
+   Start at  14:17:16
+   Duration  1.40s (transform 397ms, setup 0ms, collect 1.68s, tests 218ms, environment 1ms, prepare 979ms)

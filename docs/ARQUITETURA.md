@@ -69,7 +69,7 @@ flowchart TB
 
 - **Serviço sem estado**: não guarda sessão nem resultado. Dá pra subir N réplicas atrás de um
   balanceador.
-- **Pool de conexões por lado** (hoje 4, configurável). Quem limita o volume é o banco de
+- **Pool de conexões por lado** (hoje 4 por lado, fixo no código). Quem limita o volume é o banco de
   origem, não o serviço. Por isso o roadmap prevê amostragem e limite de tempo nos probes.
 - **O trabalho pesado fica no banco**: os probes são agregados (`COUNT`, `MAX`, `SUM CASE`), e
   o que trafega são números, não linhas.

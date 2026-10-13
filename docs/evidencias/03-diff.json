@@ -160,12 +160,10 @@
         },
         "probe": {
           "totalRows": 10,
-          "overflow": {
-            "unit": "BYTE",
-            "limit": 200,
-            "valuesAbove": 2,
-            "maxObserved": 226
-          }
+          "valuesAboveTarget": 2,
+          "maxObservedLength": 226,
+          "unit": "BYTE",
+          "targetLimit": 200
         }
       },
       {
@@ -218,12 +216,10 @@
         },
         "probe": {
           "totalRows": 10,
-          "overflow": {
-            "unit": "BYTE",
-            "limit": 11,
-            "valuesAbove": 0,
-            "maxObserved": 11
-          }
+          "valuesAboveTarget": 0,
+          "maxObservedLength": 11,
+          "unit": "BYTE",
+          "targetLimit": 11
         }
       },
       {

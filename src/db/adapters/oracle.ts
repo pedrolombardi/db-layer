@@ -118,7 +118,7 @@ export class OracleAdapter implements DbAdapter {
       engine: this.engine,
       role: this.role,
       version,
-      schema: this.cfg.user.toUpperCase(),
+      schema: this.schema,
       charset: String(charset.rows[0]?.V ?? charset.rows[0]?.v ?? 'desconhecido'),
       readOnly: this.role === 'source',
       latencyMs: Date.now() - started,

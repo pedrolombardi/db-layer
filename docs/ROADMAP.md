@@ -23,7 +23,7 @@
 | P2 | **Regras novas**: string vazia vira NULL no Oracle (quebra `NOT NULL`); defaults; índices únicos com prefixo | Mais riscos que hoje passam em silêncio ficam visíveis |
 | P2 | **Imagem no GHCR** (workflow pronto) | O grupo roda sem precisar buildar |
 | P3 | **Adaptador PostgreSQL** | Prova que a arquitetura de adaptadores escala para um terceiro banco |
-| P3 | **Observabilidade**: logs estruturados (`pino` já é dependência) e métricas por probe | Diagnóstico em produção |
+| P3 | **Observabilidade**: logs estruturados (ex. `pino`) e métricas por probe | Diagnóstico em produção |
 | P3 | **Gerenciador de segredos** no lugar das credenciais do compose | Exigência para qualquer ambiente fora do local |
 
 ## Fora do escopo do DB Layer

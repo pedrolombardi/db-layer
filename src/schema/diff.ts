@@ -6,6 +6,32 @@ export interface ProbeRunner {
   run(table: NormTable, requests: Map<string, ProbeRequest>): Promise<Map<string, Probe>>;
 }
 
+/** Probe como sai na API (contrato da secao 7: valuesAboveTarget, maxObservedLength). */
+export interface ProbeView {
+  totalRows: number;
+  valuesAboveTarget?: number;
+  maxObservedLength?: number | null;
+  /** unidade de maxObservedLength e targetLimit: a do destino (CHAR ou BYTE) */
+  unit?: 'CHAR' | 'BYTE';
+  targetLimit?: number;
+  zeroDates?: number;
+  nullCount?: number;
+  distinct?: { value: unknown; count: number }[];
+}
+
+function probeView(p: Probe | null): ProbeView | null {
+  if (!p) return null;
+  const { overflow, ...rest } = p;
+  if (!overflow) return rest;
+  return {
+    ...rest,
+    valuesAboveTarget: overflow.valuesAbove,
+    maxObservedLength: overflow.maxObserved,
+    unit: overflow.unit,
+    targetLimit: overflow.limit,
+  };
+}
+
 type SideView = { database: string; type: string } & Partial<NormColumn>;
 
 export interface DiffEntry {
@@ -19,7 +45,7 @@ export interface DiffEntry {
   warnings: string[];
   source: SideView;
   target: SideView;
-  probe: Probe | null;
+  probe: ProbeView | null;
 }
 
 export interface DiffResult {
@@ -30,7 +56,7 @@ export interface DiffResult {
 const MISSING = 'AUSENTE';
 
 /** CHECK (COL IN ('a','b')) restrito a uma coluna -> ['a','b'] */
-export function checkInValues(table: NormTable, column: NormColumn): string[] | null {
+function checkInValues(table: NormTable, column: NormColumn): string[] | null {
   for (const ck of table.checks) {
     if (ck.columns.length !== 1 || ck.columns[0] !== column.name) continue;
     const m = /^\s*\(?\s*[`"]?[A-Za-z0-9_$#]+[`"]?\s+IN\s*\(([\s\S]*)\)\s*\)?\s*$/i.exec(ck.expression);
@@ -98,7 +124,7 @@ export async function diffSchemas(source: NormSchema, target: NormSchema, runner
         ...result,
         source: view(source.engine, sc),
         target: view(target.engine, tc),
-        probe,
+        probe: probeView(probe),
       });
     }
     for (const tc of tt.columns) {

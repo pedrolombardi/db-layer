@@ -6,7 +6,7 @@
  * banco significa escrever um novo adaptador, sem tocar no dominio.
  */
 
-export type Engine = 'mysql' | 'oracle' | 'postgres';
+export type Engine = 'mysql' | 'oracle';
 
 /** Papel da conexao. `source` e sempre aberto em modo somente leitura. */
 export type Role = 'source' | 'target';
@@ -73,8 +73,7 @@ export class DbLayerError extends Error {
       | 'CONNECTION_FAILED'
       | 'READ_ONLY_VIOLATION'
       | 'QUERY_FAILED'
-      | 'NOT_CONNECTED'
-      | 'NOT_SUPPORTED',
+      | 'NOT_CONNECTED',
     message: string,
     public readonly cause?: unknown,
   ) {

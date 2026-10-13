@@ -101,7 +101,7 @@ export class MySqlAdapter implements DbAdapter {
       engine: this.engine,
       role: this.role,
       version: String(version.rows[0]?.v ?? 'desconhecida'),
-      schema: this.cfg.database,
+      schema: this.schema,
       charset: String(charset.rows[0]?.v ?? 'desconhecido'),
       readOnly: this.role === 'source',
       latencyMs: Date.now() - started,

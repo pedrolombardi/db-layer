@@ -62,6 +62,7 @@ describe('diff do seed (criterio de aceite)', () => {
       target: { database: 'oracle', type: 'VARCHAR2(200)' },
     });
     expect(email.reason).toContain('máx. 226 > 200');
+    expect(email.probe).toMatchObject({ valuesAboveTarget: 2, maxObservedLength: 226, unit: 'BYTE' });
   });
 
   it('tabela ou coluna ausente vira julgamento com tipo AUSENTE (passa no validador da AI Layer)', async () => {
