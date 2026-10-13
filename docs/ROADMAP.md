@@ -20,6 +20,7 @@
 | P1 | **Autenticação entre serviços** (token por serviço) | Nenhum endpoint deveria ficar aberto fora da rede local |
 | P1 | **Amostragem e limite de tempo nos probes** | Ler a tabela inteira inviabiliza tabelas grandes de produção |
 | P1 | **Credenciais por migração** (Connection Manager): hoje o DB Layer usa as conexões configuradas e recusa outras com 400 | O Core já envia host/database/usuário da origem |
+| P1 | **Extração de amostra para o Data Layer** (`POST /extract/sample` → `{dataset: {tables: [{name, columns: [{name, type, nullable, pk, fk}], rows}]}}`, o formato do `/v1/anonymize` do Lucas) | O Data Layer recebe linhas mas não lê a origem, e hoje ninguém as entrega; o DB Layer é o único com acesso de leitura. Exige combinar o tipo de `DECIMAL` (string, para não perder precisão) e o limite de linhas |
 | P1 | **`/validate/plan`**: validar deterministicamente o plano de migração | É o "quem valida não é quem propõe" aplicado ao plano. Depende de acertar o formato do plano com o Core |
 | P2 | **Cache do catálogo** com expiração | Cada chamada de tool relê os dois catálogos hoje |
 | P2 | **Regras novas**: string vazia vira NULL no Oracle (quebra `NOT NULL`); defaults; índices únicos com prefixo | Mais riscos que hoje passam em silêncio ficam visíveis |
@@ -35,6 +36,8 @@ O Core chama `POST /plan/apply` (escrita no destino), que **não está** no docu
 O próprio README do Core marca a rota como suposição. Escrever no destino depois da homologação
 pede uma decisão explícita do grupo sobre quem escreve e com que garantias. Até lá, o DB Layer não
 escreve em banco nenhum.
+
+Também pendente: quem entrega as linhas ao Data Layer. O Core chama `POST /anonymize` só com credenciais e nomes de tabela, mas o Data Layer (`/v1/anonymize`) espera receber as linhas. A proposta é o DB Layer extrair a amostra (item P1 acima).
 
 ## Fora do escopo do DB Layer
 
