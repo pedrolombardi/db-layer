@@ -60,13 +60,5 @@ export function schemaRoutes(registry: Registry, deps: Deps): Router {
     res.json(await diffSchemas(source, target, deps.probeRunner(registry.source)));
   });
 
-  /**
-   * POST /validate/plan — previsto no documento da Fase 6, entregue na Fase 7.
-   * 501 explicito em vez de 404: quem chama sabe que e "ainda nao", nao "rota errada".
-   */
-  router.post('/validate/plan', () => {
-    throw new HttpError(501, 'NOT_IMPLEMENTED', 'validacao deterministica do plano no sandbox: Fase 7 (ver docs/ROADMAP.md)');
-  });
-
   return router;
 }

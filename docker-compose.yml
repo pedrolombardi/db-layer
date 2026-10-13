@@ -66,6 +66,8 @@ services:
       TGT_SERVICE: FREEPDB1
       TGT_USER: vendas
       TGT_PASSWORD: vendas
+      SBX_USER: sandbox
+      SBX_PASSWORD: sandbox
     ports:
       - "3002:3002"
     depends_on:

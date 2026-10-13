@@ -2,6 +2,7 @@ import { Env } from '../config/env';
 import { DbAdapter } from './types';
 import { MySqlAdapter } from './adapters/mysql';
 import { OracleAdapter } from './adapters/oracle';
+import { OracleSandbox } from '../sandbox/oracle-sandbox';
 
 /**
  * Instancia os adaptadores de origem e destino a partir da configuracao.
@@ -10,6 +11,8 @@ import { OracleAdapter } from './adapters/oracle';
 export interface Registry {
   source: DbAdapter;
   target: DbAdapter;
+  /** schema de validacao (escrita permitida SO aqui); opcional nos testes */
+  sandbox?: OracleSandbox;
   connectAll(): Promise<void>;
   closeAll(): Promise<void>;
 }
@@ -33,14 +36,23 @@ export function createRegistry(env: Env): Registry {
     role: 'target',
   });
 
+  const sandbox = new OracleSandbox({
+    host: env.TGT_HOST,
+    port: env.TGT_PORT,
+    serviceName: env.TGT_SERVICE,
+    user: env.SBX_USER,
+    password: env.SBX_PASSWORD,
+  });
+
   return {
     source,
     target,
+    sandbox,
     async connectAll() {
-      await Promise.all([source.connect(), target.connect()]);
+      await Promise.all([source.connect(), target.connect(), sandbox.connect()]);
     },
     async closeAll() {
-      await Promise.allSettled([source.close(), target.close()]);
+      await Promise.allSettled([source.close(), target.close(), sandbox.close()]);
     },
   };
 }

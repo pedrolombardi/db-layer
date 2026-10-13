@@ -2,6 +2,12 @@ WHENEVER SQLERROR EXIT FAILURE
 -- O entrypoint da gvenzl roda .sql como "sqlplus / as sysdba" no CDB raiz.
 -- Sem as duas linhas abaixo as tabelas nasceriam no schema errado.
 ALTER SESSION SET CONTAINER = FREEPDB1;
+
+-- Schema SANDBOX: onde o DB Layer valida o plano aprovado, carregando o dataset
+-- anonimizado nos tipos planejados. E o UNICO lugar onde o DB Layer escreve:
+-- nunca a origem, nunca o schema de destino (VENDAS).
+CREATE USER sandbox IDENTIFIED BY sandbox QUOTA UNLIMITED ON USERS;
+GRANT CREATE SESSION, CREATE TABLE TO sandbox;
 ALTER SESSION SET CURRENT_SCHEMA = VENDAS;
 
 -- ---------------------------------------------------------------------------

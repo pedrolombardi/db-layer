@@ -11,7 +11,10 @@ async function main(): Promise<void> {
   // do Oracle terminar de inicializar.
   try {
     await registry.connectAll();
-    console.log('[db-layer] pools abertos (origem e destino)');
+    console.log('[db-layer] pools abertos (origem, destino e sandbox)');
+    const started = Date.now();
+    await registry.sandbox?.warmUp();
+    console.log(`[db-layer] sandbox aquecido em ${Date.now() - started} ms`);
   } catch (err) {
     console.error('[db-layer] falha ao abrir pools no boot:', (err as Error).message);
     console.error('[db-layer] o servico vai subir; consulte GET /health/db');

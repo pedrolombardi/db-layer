@@ -113,9 +113,11 @@ describe('contrato com o Backend Core', () => {
     expect(id).toMatchObject({ kind: 'mechanical', sourceType: 'INT', targetType: 'NUMBER(10)' });
   });
 
-  it('POST /validate/plan responde 501 explicito (Fase 7), nao 404', async () => {
-    const res = await request(setup()).post('/validate/plan').send({});
-    expect(res.status).toBe(501);
-    expect(res.body.code).toBe('NOT_IMPLEMENTED');
+  it('POST /validate/plan valida o corpo (400) e falha alto sem sandbox (503)', async () => {
+    const app = setup();
+    expect((await request(app).post('/validate/plan').send({ plan: { conflicts: [] } })).status).toBe(400);
+    const res = await request(app).post('/validate/plan').send({ plan: { conflicts: [] }, dataset: { tables: [] } });
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe('SANDBOX_UNAVAILABLE');
   });
 });
