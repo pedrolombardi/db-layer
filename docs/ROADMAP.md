@@ -24,6 +24,7 @@
 | P2 | **Cache do catálogo** com expiração | Cada chamada de tool relê os dois catálogos hoje |
 | P2 | **Regras novas**: string vazia vira NULL no Oracle (quebra `NOT NULL`); defaults; índices únicos com prefixo | Mais riscos que hoje passam em silêncio ficam visíveis |
 | P2 | **Imagem no GHCR** (workflow pronto) | O grupo roda sem precisar buildar |
+| P2 | **Teste de usabilidade com desenvolvedores** que consomem a API (roteiro em USABILIDADE.md) | Medir o tempo até a primeira integração e onde a documentação trava |
 | P3 | **Adaptador PostgreSQL** | Prova que a arquitetura de adaptadores escala para um terceiro banco |
 | P3 | **Observabilidade**: logs estruturados (ex. `pino`) e métricas por probe | Diagnóstico em produção |
 | P3 | **Gerenciador de segredos** no lugar das credenciais do compose | Exigência para qualquer ambiente fora do local |
