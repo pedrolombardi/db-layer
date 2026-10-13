@@ -1,0 +1,72 @@
+# ---------------------------------------------------------------------------
+# Ambiente local do DB Layer.
+#
+#   docker compose up
+#
+# Sobe origem (MySQL), destino (Oracle Database Free) e o proprio servico.
+# O primeiro boot do Oracle demora alguns minutos: ele precisa criar o banco.
+# Os boots seguintes reaproveitam o volume e sao rapidos.
+# ---------------------------------------------------------------------------
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: dbl-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: vendas
+    ports:
+      - "3307:3306"          # 3307 no host para nao conflitar com MySQL local
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./seeds/mysql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  oracle-free:
+    # Imagem da comunidade, bem menor que a oficial e o padrao de fato para
+    # desenvolvimento. ATENCAO: Oracle Database nao roda nativamente em Mac
+    # Apple Silicon (ver README).
+    image: gvenzl/oracle-free:23-slim
+    container_name: dbl-oracle
+    environment:
+      ORACLE_PASSWORD: oracle          # senha de SYS/SYSTEM
+      APP_USER: vendas                 # usuario da aplicacao
+      APP_USER_PASSWORD: vendas
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./seeds/oracle:/container-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 120s
+
+  db-layer:
+    build: .
+    container_name: dbl-api
+    env_file: .env
+    environment:
+      SRC_HOST: mysql
+      SRC_PORT: 3306
+      TGT_HOST: oracle-free
+      TGT_PORT: 1521
+    ports:
+      - "3001:3001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      oracle-free:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  oracle-data:
